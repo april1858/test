@@ -1,0 +1,223 @@
+basePath: /
+definitions:
+  domain.CreateSubscriptionReq:
+    properties:
+      end_date:
+        description: Опционально
+        type: string
+      price:
+        description: 'Валидация: строго больше 0'
+        type: integer
+      service_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      start_date:
+        description: '"MM-YYYY" кастомный тег валидатора'
+        type: string
+      user_id:
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  domain.Subscription:
+    properties:
+      created_at:
+        type: string
+      end_date:
+        description: Указатель для поддержки значения NULL
+        type: string
+      id:
+        type: string
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        description: Внутреннее представление даты
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.UpdateSubscriptionReq:
+    properties:
+      end_date:
+        type: string
+      price:
+        type: integer
+      service_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST-сервис для агрегации данных об онлайн подписках пользователей.
+  title: Subscription Aggregator API
+  version: "1.0"
+paths:
+  /api/v1/subscriptions:
+    get:
+      parameters:
+      - description: Количество записей
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Subscription'
+            type: array
+      summary: Получить список подписок (Листинг)
+      tags:
+      - subscriptions
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новую запись о подписке пользователя
+      parameters:
+      - description: Данные подписки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateSubscriptionReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать подписку
+      tags:
+      - subscriptions
+  /api/v1/subscriptions/{id}:
+    delete:
+      parameters:
+      - description: UUID подписки
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Удалить подписку по ID
+      tags:
+      - subscriptions
+    get:
+      parameters:
+      - description: UUID подписки
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить подписку по ID
+      tags:
+      - subscriptions
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: UUID подписки
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новые данные подписки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateSubscriptionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Subscription'
+      summary: Обновить подписку по ID
+      tags:
+      - subscriptions
+  /api/v1/subscriptions/total:
+    get:
+      description: Считает сумму стоимостей подписок пользователя по названию за выбранный
+        временной интервал
+      parameters:
+      - description: UUID пользователя
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: Название сервиса подписки
+        in: query
+        name: service_name
+        required: true
+        type: string
+      - description: Начало периода (MM-YYYY)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конец периода (MM-YYYY)
+        in: query
+        name: to
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 'Пример: {"total_cost": 1200}'
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Подсчет суммарной стоимости за период
+      tags:
+      - analytics
+swagger: "2.0"
