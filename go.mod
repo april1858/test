@@ -3,7 +3,6 @@ module github.com/april1858/test
 go 1.26.5
 
 require (
-	github.com/april1858/test_taskEM v0.0.0-20260728030213-a4a320a1056d
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/google/uuid v1.6.0
